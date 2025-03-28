@@ -1,0 +1,91 @@
+=> 0x7ffff7fbf000:	push   rbp // init
+   0x7ffff7fbf001:	mov    rbp,rsp
+   0x7ffff7fbf004:	push   0x101213e
+   0x7ffff7fbf009:	xor    DWORD PTR [rsp],0x1010101 
+                           // xor with 0x101213e 
+   0x7ffff7fbf010:	movabs rax,0x67616c6620656874
+   0x7ffff7fbf01a:	push   rax
+   0x7ffff7fbf01b:	movabs rax,0x2073692074616857
+   0x7ffff7fbf025:	push   rax
+   0x7ffff7fbf026:	push   0x1
+   0x7ffff7fbf028:	pop    rax
+   0x7ffff7fbf029:	push   0x1
+   0x7ffff7fbf02b:	pop    rdi
+   0x7ffff7fbf02c:	push   0x12
+   0x7ffff7fbf02e:	pop    rdx
+   0x7ffff7fbf02f:	mov    rsi,rsp
+   0x7ffff7fbf032:	syscall // write 18 bytes from stack f01b, f010
+                              // What is the flag?
+   0x7ffff7fbf034:	sub    rsp,0x100 // 256 bytes reserved for buffer
+   0x7ffff7fbf03b:	mov    r12,rsp
+   0x7ffff7fbf03e:	xor    eax,eax 
+   0x7ffff7fbf040:	xor    edi,edi
+   0x7ffff7fbf042:	xor    edx,edx // cleaning
+   0x7ffff7fbf044:	mov    dh,0x1
+   0x7ffff7fbf046:	mov    rsi,r12
+   0x7ffff7fbf049:	syscall         // read into r12
+   0x7ffff7fbf04b:	test   rax,rax // if read is not empty
+   0x7ffff7fbf04e:	jle    0x7ffff7fbf082
+
+
+
+   // for loop sliding 4 bytes with xor
+   0x7ffff7fbf050:	push   0x1a // 26
+   0x7ffff7fbf052:	pop    rax
+   0x7ffff7fbf053:	mov    rcx,r12 // rcx = r12
+   0x7ffff7fbf056:	add    rax,rcx // rax += rcx + 26
+   0x7ffff7fbf059:	xor    DWORD PTR [rcx],0xbeefcafe
+   0x7ffff7fbf05f:	add    rcx,0x4 // rcx += 4
+   0x7ffff7fbf063:	cmp    rcx,rax // if rcx < rax
+   0x7ffff7fbf066:	jb     0x7ffff7fbf059
+
+
+   0x7ffff7fbf068:	mov    rdi,r12
+   0x7ffff7fbf06b:	lea    rsi,[rip+0x12]        # 0x7ffff7fbf084
+   0x7ffff7fbf072:	mov    rcx,0x1a
+   0x7ffff7fbf079:	cld
+
+   // comparing rdi (r12, input) with rsi (0x1a bytes = 26 bytes)
+   0x7ffff7fbf07a:	repz cmps BYTE PTR ds:[rsi],BYTE PTR es:[rdi]
+   0x7ffff7fbf07c:	sete   al
+   0x7ffff7fbf07f:	movzx  eax,al
+   0x7ffff7fbf082:	leave
+   0x7ffff7fbf083:	ret
+
+// 0x7ffff7fbf084: memory dump
+0x7ffff7fbf084:   0xb6  0x9e  0xad  0xc5  0x92  0xfa  0xdf  0xd5
+0x7ffff7fbf08c:   0xa1  0xa8  0xdc  0xc7  0xce  0xa4  0x8b  0xe1
+0x7ffff7fbf094:   0x8a  0xa2  0xdc  0xe1  0x89  0xfa  0x9d  0xd2
+0x7ffff7fbf09c:   0x9a  0xb7
+
+
+int main() {
+    char buffer[256];
+    char message[] = "What is flag?";
+    char expected[] = "the flag is here";
+    ssize_t bytes_read;
+    
+    // Print message
+    write(STDOUT_FILENO, message, sizeof(message) - 1);
+    
+    // Read user input
+    bytes_read = read(STDIN_FILENO, buffer, 256);
+    if (bytes_read <= 0) {
+        return 0;
+    }
+    
+    // XOR first few bytes with 0xBEEFCAFE
+    for (int i = 0; i < bytes_read - 4; i += 4) {
+        *(int *)(buffer + i) ^= 0xBEEFCAFE;
+    }
+    
+    // Compare with expected string
+    if (memcmp(buffer, expected, 26) == 0) {
+        puts("You got the flag!");
+        return 1;
+    }
+    
+    puts("Try again...");
+    return 0;
+}
+

